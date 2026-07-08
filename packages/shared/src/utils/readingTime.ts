@@ -13,6 +13,23 @@ export interface ReadTimeResults {
 export type IOptions = ReadingTimeOptions
 export type IReadTimeResults = ReadTimeResults
 
+const DEFAULT_WORDS_PER_MINUTE = 200
+const ANSI_WORD_BOUNDARIES = ` \n\r\t`
+const CJK_RANGES = [
+  [0x3040, 0x309F],
+  [0x4E00, 0x9FFF],
+  [0xAC00, 0xD7A3],
+  [0x20000, 0x2EBE0],
+] as const
+const PUNCTUATION_RANGES = [
+  [0x21, 0x2F],
+  [0x3A, 0x40],
+  [0x5B, 0x60],
+  [0x7B, 0x7E],
+  [0x3000, 0x303F],
+  [0xFF00, 0xFFEF],
+] as const
+
 function codeIsInRanges(number: number, ranges: ReadonlyArray<readonly [number, number]>): boolean {
   return ranges.some(([lowerBound, upperBound]) => lowerBound <= number && number <= upperBound)
 }
@@ -23,16 +40,11 @@ function isCJK(char: string | undefined): boolean {
   }
 
   const charCode = char.charCodeAt(0)
-  return codeIsInRanges(charCode, [
-    [0x3040, 0x309F],
-    [0x4E00, 0x9FFF],
-    [0xAC00, 0xD7A3],
-    [0x20000, 0x2EBE0],
-  ])
+  return codeIsInRanges(charCode, CJK_RANGES)
 }
 
 function isAnsiWordBound(char: string | undefined): boolean {
-  return typeof char === `string` && ` \n\r\t`.includes(char)
+  return typeof char === `string` && ANSI_WORD_BOUNDARIES.includes(char)
 }
 
 function isPunctuation(char: string | undefined): boolean {
@@ -41,14 +53,7 @@ function isPunctuation(char: string | undefined): boolean {
   }
 
   const charCode = char.charCodeAt(0)
-  return codeIsInRanges(charCode, [
-    [0x21, 0x2F],
-    [0x3A, 0x40],
-    [0x5B, 0x60],
-    [0x7B, 0x7E],
-    [0x3000, 0x303F],
-    [0xFF00, 0xFFEF],
-  ])
+  return codeIsInRanges(charCode, PUNCTUATION_RANGES)
 }
 
 export default function readingTime(text: string, options: ReadingTimeOptions = {}): ReadTimeResults {
@@ -56,7 +61,7 @@ export default function readingTime(text: string, options: ReadingTimeOptions = 
   let start = 0
   let end = text.length - 1
 
-  const wordsPerMinute = options.wordsPerMinute || 200
+  const wordsPerMinute = options.wordsPerMinute || DEFAULT_WORDS_PER_MINUTE
   const isWordBound = options.wordBound || isAnsiWordBound
 
   while (isWordBound(text[start])) start++
