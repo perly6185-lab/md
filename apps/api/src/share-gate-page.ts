@@ -1,22 +1,15 @@
 import type { ShareFooterAuthor } from './share-page'
 import { sharePageFaviconLink } from './share-head'
+import { escapeShareHtml } from './share-html'
 import { buildShareAuthorHtml } from './share-page'
 import { sharePageCspMeta } from './share-sanitize'
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, `&amp;`)
-    .replace(/</g, `&lt;`)
-    .replace(/>/g, `&gt;`)
-    .replace(/"/g, `&quot;`)
-}
 
 export function buildShareGateHtml(
   shareId: string,
   title: string,
   options: { error?: `invalid` | `rate_limited`, author?: ShareFooterAuthor } = {},
 ): string {
-  const safeTitle = escapeHtml(title || `Markdown 分享`)
+  const safeTitle = escapeShareHtml(title || `Markdown 分享`)
   const errorMessage = options.error === `rate_limited`
     ? `尝试次数过多，请稍后再试。`
     : options.error === `invalid`
@@ -115,8 +108,8 @@ export function buildShareGateHtml(
   <div class="gate-card">
     <h1>${safeTitle}</h1>
     <p>此分享链接已设置访问密码，请输入密码后查看。</p>
-    ${errorMessage ? `<div class="error">${escapeHtml(errorMessage)}</div>` : ``}
-    <form method="POST" action="/s/${escapeHtml(shareId)}/unlock">
+    ${errorMessage ? `<div class="error">${escapeShareHtml(errorMessage)}</div>` : ``}
+    <form method="POST" action="/s/${escapeShareHtml(shareId)}/unlock">
       <label for="password">访问密码</label>
       <input id="password" name="password" type="password" autocomplete="current-password" required autofocus />
       <button type="submit">查看内容</button>

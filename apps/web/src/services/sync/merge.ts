@@ -35,6 +35,14 @@ function docToPost(doc: SyncDocument): Post {
   }
 }
 
+function isRemoteNewer(remoteMs: number, localMs: number): boolean {
+  return remoteMs > localMs
+}
+
+function hasMergeableRemoteContent(doc: SyncDocument, local: Post): boolean {
+  return !doc.deleted && doc.content !== local.content
+}
+
 /** 把败方内容并入胜方历史，避免数据丢失（按内容去重） */
 function mergeHistory(winner: Post, loserContent: string, loserDatetime: number): void {
   if (!loserContent)
@@ -80,7 +88,7 @@ export function mergeRemoteIntoLocal(localPosts: Post[], remoteDocs: SyncDocumen
     const localMs = toMs(local.updateDatetime)
     const remoteMs = doc.updateDatetime
 
-    if (remoteMs > localMs) {
+    if (isRemoteNewer(remoteMs, localMs)) {
       // 远端较新
       if (doc.deleted) {
         localMap.delete(doc.id)
@@ -96,7 +104,7 @@ export function mergeRemoteIntoLocal(localPosts: Post[], remoteDocs: SyncDocumen
     }
     else {
       // 本地较新（或同时）：保留本地，远端内容并入历史兜底
-      if (!doc.deleted && doc.content !== local.content) {
+      if (hasMergeableRemoteContent(doc, local)) {
         mergeHistory(local, doc.content, remoteMs)
         changed = true
       }
