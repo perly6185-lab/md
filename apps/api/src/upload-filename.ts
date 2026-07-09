@@ -12,6 +12,8 @@ const MIME_TO_EXT: Record<string, string> = {
 }
 
 const INVALID_EXTENSIONS = new Set([`blob`, `bin`, `octet-stream`])
+const MAX_EXTENSION_LENGTH = 10
+const DEFAULT_IMAGE_EXTENSION = `png`
 
 function extensionFromMime(mimeType: string): string | null {
   const mime = mimeType.trim().toLowerCase()
@@ -36,7 +38,7 @@ function extensionFromFilename(filename: string): string | null {
     return null
 
   const ext = name.slice(dotIndex + 1).toLowerCase()
-  if (!ext || INVALID_EXTENSIONS.has(ext) || ext.length > 10)
+  if (!ext || INVALID_EXTENSIONS.has(ext) || ext.length > MAX_EXTENSION_LENGTH)
     return null
 
   return ext
@@ -45,7 +47,7 @@ function extensionFromFilename(filename: string): string | null {
 export function resolveImageExtension(filename: string, mimeType: string): string {
   return extensionFromFilename(filename)
     ?? extensionFromMime(mimeType)
-    ?? `png`
+    ?? DEFAULT_IMAGE_EXTENSION
 }
 
 export function buildDatedObjectKey(filename: string, mimeType: string): string {

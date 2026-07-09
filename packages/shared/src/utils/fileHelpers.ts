@@ -1,12 +1,19 @@
+const DEFAULT_DOWNLOAD_MIME_TYPE = `text/plain`
+const DOWNLOAD_BROWSER_ONLY_ERROR = `downloadFile can only be used in browser environment`
+
+function isDirectDownloadUrl(content: string): boolean {
+  return content.startsWith(`data:`) || content.startsWith(`blob:`)
+}
+
 /**
  * 通用文件下载函数
  * @param content - 文件内容
  * @param filename - 文件名
  * @param mimeType - MIME 类型，默认为 text/plain
  */
-export function downloadFile(content: string, filename: string, mimeType: string = `text/plain`) {
+export function downloadFile(content: string, filename: string, mimeType: string = DEFAULT_DOWNLOAD_MIME_TYPE) {
   if (typeof document === `undefined`) {
-    throw new TypeError(`downloadFile can only be used in browser environment`)
+    throw new TypeError(DOWNLOAD_BROWSER_ONLY_ERROR)
   }
 
   const downLink = document.createElement(`a`)
@@ -15,7 +22,7 @@ export function downloadFile(content: string, filename: string, mimeType: string
   let objectUrl: string | null = null
 
   // 检查是否是 base64 data URL
-  if (content.startsWith(`data:`) || content.startsWith(`blob:`)) {
+  if (isDirectDownloadUrl(content)) {
     downLink.href = content
   }
   else if (mimeType === `text/html`) {

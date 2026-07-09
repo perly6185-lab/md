@@ -27,6 +27,8 @@ export const blockLatexRule = /^\\\[([^\\]*(?:\\.[^\\]*)*?)\\\]/
 
 const blockLatexAnywhere = /\\\[[^\\]*(?:\\.[^\\]*)*?\\\]/
 const inlineLatexAnywhere = /\\\([^\\]*(?:\\.[^\\]*)*?\\\)/
+const DOLLAR_RUN_RE = /^\$+/
+const INLINE_KATEX_BREAK_RE = /<br\s*\/?>\s*(?=<span class="katex-inline)/gi
 
 function isAmountDollarSign(src: string, index: number): boolean {
   if (index <= 0)
@@ -58,7 +60,7 @@ export function findInlineKatexStart(src: string, nonStandard: boolean, ruleReg:
         return offset + index
     }
 
-    const next = indexSrc.substring(index + 1).replace(/^\$+/, ``)
+    const next = indexSrc.substring(index + 1).replace(DOLLAR_RUN_RE, ``)
     offset += indexSrc.length - next.length
     indexSrc = next
   }
@@ -82,5 +84,5 @@ export function contentHasMath(content: string, nonStandard = true): boolean {
 
 /** 移除 inline 公式前因 breaks 产生的多余换行 */
 export function stripBreakBeforeInlineKatex(html: string): string {
-  return html.replace(/<br\s*\/?>\s*(?=<span class="katex-inline)/gi, ``)
+  return html.replace(INLINE_KATEX_BREAK_RE, ``)
 }
