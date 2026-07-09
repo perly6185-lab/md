@@ -141,22 +141,13 @@ export function formatColor(view: EditorView, color: string) {
 
   const spanRegex = /^\s*<span\s+style="color:\s*([^"\s][^"]*)"\s*>([\s\S]*)<\/span>\s*$/i
   const match = selected.match(spanRegex)
+  const content = match ? match[2] : selected
+  const insert = `<span style="color: ${color}">${content}</span>`
 
-  if (match) {
-    const content = match[2]
-    const insert = `<span style="color: ${color}">${content}</span>`
-    view.dispatch({
-      changes: { from: selection.from, to: selection.to, insert },
-      selection: { anchor: selection.from, head: selection.from + insert.length },
-    })
-  }
-  else {
-    const insert = `<span style="color: ${color}">${selected}</span>`
-    view.dispatch({
-      changes: { from: selection.from, to: selection.to, insert },
-      selection: { anchor: selection.from, head: selection.from + insert.length },
-    })
-  }
+  view.dispatch({
+    changes: { from: selection.from, to: selection.to, insert },
+    selection: { anchor: selection.from, head: selection.from + insert.length },
+  })
 }
 
 export function formatUnorderedList(view: EditorView) {

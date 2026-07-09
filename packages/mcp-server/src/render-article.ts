@@ -60,6 +60,14 @@ const themeMap: Record<string, string> = {
 
 const hljsCssCache = new Map<string, string>()
 
+function resolveThemeCSS(theme: ThemeName): string {
+  return themeMap[theme] || themeMap.default
+}
+
+function buildMergedCSS(sections: string[]): string {
+  return processCSS(sections.filter(Boolean).join(`\n\n`))
+}
+
 export async function fetchCodeBlockCSS(url: string): Promise<string> {
   assertAllowedCodeBlockThemeUrl(url)
 
@@ -134,20 +142,18 @@ export async function buildRenderedOutput(input: RenderMarkdownInput) {
 
   const variablesCSS = generateCSSVariables(cssConfig)
   const headingStylesCSS = generateHeadingStyles(cssConfig)
-  const themeCSS = themeMap[theme] || themeMap.default
+  const themeCSS = resolveThemeCSS(theme)
   const hljsCSS = codeBlockTheme ? await fetchCodeBlockCSS(codeBlockTheme) : ``
   const customCSS = escapeStyleContent(input.customCSS?.trim() ?? ``)
 
-  let mergedCSS = [
+  const mergedCSS = buildMergedCSS([
     variablesCSS,
     baseCSSContent,
     themeCSS,
     headingStylesCSS,
     hljsCSS,
     customCSS,
-  ].filter(Boolean).join(`\n\n`)
-
-  mergedCSS = processCSS(mergedCSS)
+  ])
 
   const html = `<style>\n${mergedCSS}\n</style>\n${processedHtml}`
 

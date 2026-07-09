@@ -9,6 +9,18 @@ interface MarkdownDoc {
   line: (n: number) => { text: string }
 }
 
+function isFrontMatterClose(trimmed: string): boolean {
+  return trimmed === `---` || trimmed === `...`
+}
+
+function matchFenceDelimiter(trimmed: string): RegExpMatchArray | null {
+  return trimmed.match(/^(`{3,}|~{3,})/)
+}
+
+function matchClosingFence(trimmed: string): RegExpMatchArray | null {
+  return trimmed.match(/^(`{3,}|~{3,})\s*$/)
+}
+
 export function extractMarkdownHeadings(doc: MarkdownDoc): MarkdownHeading[] {
   const items: MarkdownHeading[] = []
   let codeFenceChar = ``
@@ -24,20 +36,20 @@ export function extractMarkdownHeadings(doc: MarkdownDoc): MarkdownHeading[] {
       continue
     }
     if (inFrontMatter) {
-      if (trimmed === `---` || trimmed === `...`)
+      if (isFrontMatterClose(trimmed))
         inFrontMatter = false
       continue
     }
 
     if (codeFenceChar) {
-      const closeMatch = trimmed.match(/^(`{3,}|~{3,})\s*$/)
+      const closeMatch = matchClosingFence(trimmed)
       if (closeMatch && closeMatch[1][0] === codeFenceChar && closeMatch[1].length >= codeFenceCount) {
         codeFenceChar = ``
         codeFenceCount = 0
       }
       continue
     }
-    const openMatch = trimmed.match(/^(`{3,}|~{3,})/)
+    const openMatch = matchFenceDelimiter(trimmed)
     if (openMatch) {
       codeFenceChar = openMatch[1][0]
       codeFenceCount = openMatch[1].length

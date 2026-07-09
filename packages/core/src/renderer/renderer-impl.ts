@@ -105,6 +105,18 @@ const macCodeSvg = `
 `.trim()
 const macCodeSign = `<span class="mac-sign" style="padding: 10px 14px 0;">${macCodeSvg}</span>`
 
+function isStandaloneKatexBlock(html: string): boolean {
+  return /^<section class="katex-block"[\s\S]*<\/section>\s*$/.test(html.trim())
+}
+
+function buildPendingLanguageAttr(langText: string, text: string, showLineNumber: boolean | undefined): string {
+  if (hljs.getLanguage(langText) || langText === `plaintext`)
+    return ``
+
+  const escapedText = text.replace(DOUBLE_QUOTE_REGEX, `&quot;`)
+  return ` data-language-pending="${langText}" data-raw-code="${escapedText}" data-show-line-number="${showLineNumber}"`
+}
+
 /**
  * 渲染 diff-{lang} 代码块。
  * 以 `+` 开头的行显示绿色底色（新增），`-` 开头的行显示红色底色（删除），
@@ -272,7 +284,7 @@ export function initRenderer(opts: IOpts = {}): RendererAPI {
       const text = this.parser.parseInline(tokens)
       const isFigureImage = text.includes(`<figure`) && text.includes(`<img`)
       const isEmpty = text.trim() === ``
-      const isKatexOnly = /^<section class="katex-block"[\s\S]*<\/section>\s*$/.test(text.trim())
+      const isKatexOnly = isStandaloneKatexBlock(text)
       if (isFigureImage || isEmpty || isKatexOnly) {
         return text
       }
@@ -299,11 +311,7 @@ export function initRenderer(opts: IOpts = {}): RendererAPI {
       const highlighted = highlightAndFormatCode(text, language, hljs, !!opts.isShowLineNumber)
 
       // 如果语言未注册，添加 data-language-pending 属性和原始代码文本用于后续动态加载
-      let pendingAttr = ``
-      if (!isLanguageRegistered && langText !== `plaintext`) {
-        const escapedText = text.replace(DOUBLE_QUOTE_REGEX, `&quot;`)
-        pendingAttr = ` data-language-pending="${langText}" data-raw-code="${escapedText}" data-show-line-number="${opts.isShowLineNumber}"`
-      }
+      const pendingAttr = buildPendingLanguageAttr(langText, text, opts.isShowLineNumber)
       const code = `<code class="language-${lang}"${pendingAttr}>${highlighted}</code>`
 
       return `<pre class="hljs code__pre">${macCodeSign}${code}</pre>`

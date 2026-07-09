@@ -1,13 +1,6 @@
 import { sharePageFaviconLink } from './share-head'
+import { escapeShareHtml } from './share-html'
 import { sharePageCspMeta } from './share-sanitize'
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, `&amp;`)
-    .replace(/</g, `&lt;`)
-    .replace(/>/g, `&gt;`)
-    .replace(/"/g, `&quot;`)
-}
 
 export const SHARE_VIEW_COUNT_PLACEHOLDER = `{{SHARE_VIEW_COUNT}}`
 export const SHARE_AUTHOR_PLACEHOLDER = `{{SHARE_AUTHOR}}`
@@ -52,7 +45,7 @@ const SHARE_FOOTER_STYLES = `
     }`
 
 export function buildShareAuthorHtml(author: ShareFooterAuthor): string {
-  const safeName = escapeHtml(author.displayName)
+  const safeName = escapeShareHtml(author.displayName)
   return `由 ${safeName} 分享`
 }
 
@@ -79,7 +72,7 @@ export function buildSharePageHtml(
   bodyHtml: string,
   stylesHtml: string,
 ): string {
-  const safeTitle = escapeHtml(title || `Markdown 分享`)
+  const safeTitle = escapeShareHtml(title || `Markdown 分享`)
 
   return `<!DOCTYPE html>
 <html lang="zh-CN">
