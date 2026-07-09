@@ -18,6 +18,10 @@ export const UPLOAD_RATE_LIMIT = {
   pro: 300,
 } as const
 
+const DEFAULT_GITHUB_USERNAME = `bucketio`
+const DEFAULT_GITHUB_BRANCH = `main`
+const DEFAULT_GITHUB_REPO_COUNT = 20
+
 export function isUploadEnabled(env: Env): boolean {
   return env.UPLOAD_ENABLED === `true` || env.UPLOAD_ENABLED === `1`
 }
@@ -35,18 +39,18 @@ export function parseGithubUploadConfig(env: Env): UploadGithubConfig | null {
   if (!tokens.length)
     return null
 
-  const username = env.UPLOAD_GITHUB_USERNAME?.trim() || `bucketio`
+  const username = env.UPLOAD_GITHUB_USERNAME?.trim() || DEFAULT_GITHUB_USERNAME
   const repoList = (env.UPLOAD_GITHUB_REPO_LIST ?? ``)
     .split(`,`)
     .map(s => s.trim())
     .filter(Boolean)
 
   if (!repoList.length) {
-    for (let i = 0; i < 20; i++)
+    for (let i = 0; i < DEFAULT_GITHUB_REPO_COUNT; i++)
       repoList.push(`img${i}`)
   }
 
-  const branch = env.UPLOAD_GITHUB_BRANCH?.trim() || `main`
+  const branch = env.UPLOAD_GITHUB_BRANCH?.trim() || DEFAULT_GITHUB_BRANCH
   const useCdn = env.UPLOAD_GITHUB_USE_CDN !== `false` && env.UPLOAD_GITHUB_USE_CDN !== `0`
 
   return { username, repoList, branch, tokens, useCdn }

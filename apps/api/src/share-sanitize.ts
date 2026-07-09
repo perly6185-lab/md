@@ -22,17 +22,22 @@ const EVENT_HANDLERS = /\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi
 const DANGEROUS_URL_ATTRS = /\s(href|src|xlink:href)\s*=\s*(?:("|')\s*)?(?:javascript|vbscript):[^"'>\s]*/gi
 const STYLE_BREAKOUT = /<\/style>/gi
 const DANGEROUS_CSS_IMPORT = /@import\s[^;]*(?:javascript|data:text\/html)/gi
+const EMPTY_HTML = ``
+
+function removeDangerousHtml(html: string): string {
+  return html
+    .replace(SCRIPT_TAG, EMPTY_HTML)
+    .replace(DANGEROUS_TAGS, EMPTY_HTML)
+    .replace(EVENT_HANDLERS, EMPTY_HTML)
+    .replace(DANGEROUS_URL_ATTRS, EMPTY_HTML)
+}
 
 export function sanitizeHtmlSnapshot(html: string): string {
-  return html
-    .replace(SCRIPT_TAG, ``)
-    .replace(DANGEROUS_TAGS, ``)
-    .replace(EVENT_HANDLERS, ``)
-    .replace(DANGEROUS_URL_ATTRS, ``)
+  return removeDangerousHtml(html)
 }
 
 export function sanitizeStylesSnapshot(stylesHtml: string): string {
   return sanitizeHtmlSnapshot(stylesHtml)
-    .replace(STYLE_BREAKOUT, ``)
-    .replace(DANGEROUS_CSS_IMPORT, ``)
+    .replace(STYLE_BREAKOUT, EMPTY_HTML)
+    .replace(DANGEROUS_CSS_IMPORT, EMPTY_HTML)
 }
