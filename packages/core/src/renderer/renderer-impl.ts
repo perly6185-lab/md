@@ -103,6 +103,7 @@ const macCodeSvg = `
     <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)" />
   </svg>
 `.trim()
+const macCodeSign = `<span class="mac-sign" style="padding: 10px 14px 0;">${macCodeSvg}</span>`
 
 /**
  * 渲染 diff-{lang} 代码块。
@@ -148,8 +149,7 @@ function renderDiffCode(text: string, baseLang: string): string {
     })
     .join(``)
 
-  const span = `<span class="mac-sign" style="padding: 10px 14px 0;">${macCodeSvg}</span>`
-  return `<pre class="hljs code__pre">${span}<code class="language-diff-${baseLang}">${rendered}</code></pre>`
+  return `<pre class="hljs code__pre">${macCodeSign}<code class="language-diff-${baseLang}">${rendered}</code></pre>`
 }
 
 interface ParseResult {
@@ -298,7 +298,6 @@ export function initRenderer(opts: IOpts = {}): RendererAPI {
 
       const highlighted = highlightAndFormatCode(text, language, hljs, !!opts.isShowLineNumber)
 
-      const span = `<span class="mac-sign" style="padding: 10px 14px 0;">${macCodeSvg}</span>`
       // 如果语言未注册，添加 data-language-pending 属性和原始代码文本用于后续动态加载
       let pendingAttr = ``
       if (!isLanguageRegistered && langText !== `plaintext`) {
@@ -307,7 +306,7 @@ export function initRenderer(opts: IOpts = {}): RendererAPI {
       }
       const code = `<code class="language-${lang}"${pendingAttr}>${highlighted}</code>`
 
-      return `<pre class="hljs code__pre">${span}${code}</pre>`
+      return `<pre class="hljs code__pre">${macCodeSign}${code}</pre>`
     },
 
     codespan({ text }: Tokens.Codespan): string {
