@@ -10,21 +10,30 @@ import { pullHandler, pushHandler } from './sync'
 import { uploadHandler } from './upload'
 import { afdianWebhookHandler } from './webhook'
 
+const API_HEALTH_RESPONSE = { name: `md-api`, ok: true }
+const API_CORS_ALLOW_METHODS = [`GET`, `POST`, `DELETE`, `OPTIONS`]
+const API_CORS_ALLOW_HEADERS = [`Authorization`, `Content-Type`]
+const API_CORS_MAX_AGE_SECONDS = 86400
+
+function resolveCorsOrigin(env: Env, origin: string | undefined): string | null {
+  return isAllowedOrigin(env, origin) || isBrowserExtensionOrigin(origin) ? origin ?? null : null
+}
+
 const app = new Hono<{ Bindings: Env, Variables: { userId: string } }>()
 
 // CORS：允许 APP_URL 中配置的来源（支持通配符，逗号分隔）携带凭据访问
 app.use(`*`, async (c, next) => {
   const handler = cors({
-    origin: origin => (isAllowedOrigin(c.env, origin) || isBrowserExtensionOrigin(origin) ? origin : null),
-    allowMethods: [`GET`, `POST`, `DELETE`, `OPTIONS`],
-    allowHeaders: [`Authorization`, `Content-Type`],
+    origin: origin => resolveCorsOrigin(c.env, origin),
+    allowMethods: API_CORS_ALLOW_METHODS,
+    allowHeaders: API_CORS_ALLOW_HEADERS,
     credentials: true,
-    maxAge: 86400,
+    maxAge: API_CORS_MAX_AGE_SECONDS,
   })
   return handler(c, next)
 })
 
-app.get(`/`, c => c.json({ name: `md-api`, ok: true }))
+app.get(`/`, c => c.json(API_HEALTH_RESPONSE))
 
 // 默认图床上传（公开，由 UPLOAD_ENABLED 控制）
 app.post(`/upload`, uploadHandler)
