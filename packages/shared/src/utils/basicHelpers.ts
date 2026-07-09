@@ -1,3 +1,7 @@
+const VALID_IMAGE_SUFFIX_RE = /\.(?:gif|pjp|jfif|jpe|pjpeg|jpe?g|png|webp)$/i
+const MAX_IMAGE_SIZE_MB = 10
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
+
 /**
  * 清理文件标题，移除非法字符
  * @param title - 原始标题
@@ -44,7 +48,7 @@ export function removeLeft(str: string) {
  */
 export function checkImage(file: File) {
   // 检查文件名后缀
-  const isValidSuffix = /\.(?:gif|pjp|jfif|jpe|pjpeg|jpe?g|png|webp)$/i.test(file.name)
+  const isValidSuffix = VALID_IMAGE_SUFFIX_RE.test(file.name)
   if (!isValidSuffix) {
     return {
       ok: false,
@@ -53,11 +57,10 @@ export function checkImage(file: File) {
   }
 
   // 检查文件大小
-  const maxSizeMB = 10
-  if (file.size > maxSizeMB * 1024 * 1024) {
+  if (file.size > MAX_IMAGE_SIZE_BYTES) {
     return {
       ok: false,
-      msg: `由于公众号限制，图片大小不能超过 ${maxSizeMB}M`,
+      msg: `由于公众号限制，图片大小不能超过 ${MAX_IMAGE_SIZE_MB}M`,
     }
   }
 

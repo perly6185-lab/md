@@ -6,6 +6,7 @@ function escapeRegex(s: string): string {
 
 /** 浏览器扩展页面发起的 fetch 会携带 chrome-extension:// / moz-extension:// 来源 */
 const EXTENSION_ORIGIN_RE = /^(?:chrome-extension|moz-extension|safari-web-extension):\/\/[^/]+$/i
+const WILDCARD_HOST_LABEL_RE = `[^./]+`
 
 export function isBrowserExtensionOrigin(origin: string | undefined | null): boolean {
   if (!origin)
@@ -26,7 +27,7 @@ export function matchPattern(origin: string, pattern: string): boolean {
     return true
   if (!pattern.includes(`*`))
     return false
-  const re = new RegExp(`^${pattern.split(`*`).map(escapeRegex).join(`[^./]+`)}$`)
+  const re = new RegExp(`^${pattern.split(`*`).map(escapeRegex).join(WILDCARD_HOST_LABEL_RE)}$`)
   return re.test(origin)
 }
 
