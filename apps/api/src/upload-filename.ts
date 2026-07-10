@@ -54,3 +54,15 @@ export function buildDatedObjectKey(filename: string, mimeType: string): string 
   const ext = resolveImageExtension(filename, mimeType)
   return `${Date.now()}-${crypto.randomUUID()}.${ext}`
 }
+
+function getUtcDateDir(): string {
+  const date = new Date()
+  const year = date.getUTCFullYear()
+  const month = String(date.getUTCMonth() + 1).padStart(2, `0`)
+  const day = String(date.getUTCDate()).padStart(2, `0`)
+  return `${year}/${month}/${day}`
+}
+
+export function buildDatedObjectPath(filename: string, mimeType: string): string {
+  return `${getUtcDateDir()}/${buildDatedObjectKey(filename, mimeType)}`
+}

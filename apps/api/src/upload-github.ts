@@ -1,13 +1,5 @@
 import type { UploadGithubConfig } from './upload-config'
-import { buildDatedObjectKey } from './upload-filename'
-
-function getDir(): string {
-  const date = new Date()
-  const year = date.getUTCFullYear()
-  const month = String(date.getUTCMonth() + 1).padStart(2, `0`)
-  const day = String(date.getUTCDate()).padStart(2, `0`)
-  return `${year}/${month}/${day}`
-}
+import { buildDatedObjectPath } from './upload-filename'
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer)
@@ -32,9 +24,7 @@ export async function uploadToGithub(
   const repo = pickRandom(config.repoList)
   const branch = config.branch
   const accessToken = pickRandom(config.tokens)
-  const dir = getDir()
-  const dateFilename = buildDatedObjectKey(file.name, file.type)
-  const path = `${dir}/${dateFilename}`
+  const path = buildDatedObjectPath(file.name, file.type)
 
   const content = arrayBufferToBase64(await file.arrayBuffer())
   const url = `https://api.github.com/repos/${username}/${repo}/contents/${path}`
