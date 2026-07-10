@@ -1,10 +1,6 @@
 import type { UserPlan } from './plan'
+import { utcHourKey } from './time-key'
 import { UPLOAD_RATE_LIMIT } from './upload-config'
-
-function utcHourKey(): string {
-  const d = new Date()
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, `0`)}-${String(d.getUTCDate()).padStart(2, `0`)}T${String(d.getUTCHours()).padStart(2, `0`)}`
-}
 
 export function uploadRateLimitRetryAfterSec(): number {
   const d = new Date()

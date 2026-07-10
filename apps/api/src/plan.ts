@@ -1,6 +1,7 @@
 import type { AfdianOrder } from './afdian'
 import type { Env } from './types'
 import { isProEligibleOrder } from './afdian'
+import { utcDayKey, utcHourKey } from './time-key'
 
 export type UserPlan = `free` | `pro`
 
@@ -47,16 +48,6 @@ export function extendPlanExpires(currentExpiresAt: number | null, months: numbe
   const base = currentExpiresAt != null && currentExpiresAt > now ? currentExpiresAt : now
   const monthCount = Math.max(1, Math.floor(months) || 1)
   return base + monthCount * MS_PER_SPONSOR_MONTH
-}
-
-function utcHourKey(): string {
-  const d = new Date()
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, `0`)}-${String(d.getUTCDate()).padStart(2, `0`)}T${String(d.getUTCHours()).padStart(2, `0`)}`
-}
-
-function utcDayKey(): string {
-  const d = new Date()
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, `0`)}-${String(d.getUTCDate()).padStart(2, `0`)}`
 }
 
 export function sharePublishRetryAfterSec(): number {
