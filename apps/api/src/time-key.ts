@@ -10,3 +10,8 @@ export function utcHourKey(): string {
   const d = new Date()
   return `${formatUtcDayKey(d)}T${String(d.getUTCHours()).padStart(2, `0`)}`
 }
+
+export function secondsUntilNextUtcHour(): number {
+  const d = new Date()
+  return Math.max(1, (60 - d.getUTCMinutes()) * 60 - d.getUTCSeconds())
+}
