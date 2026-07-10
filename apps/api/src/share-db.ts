@@ -1,5 +1,5 @@
 import type { ShareRow } from './share-types'
-import { utcHourKey } from './time-key'
+import { secondsUntilNextUtcHour, utcHourKey } from './time-key'
 
 export async function getShareByUserAndPostId(
   db: D1Database,
@@ -135,6 +135,5 @@ export async function incrementShareRateLimit(
 }
 
 export function shareRateLimitRetryAfterSec(): number {
-  const d = new Date()
-  return Math.max(1, (60 - d.getUTCMinutes()) * 60 - d.getUTCSeconds())
+  return secondsUntilNextUtcHour()
 }

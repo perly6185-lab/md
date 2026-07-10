@@ -1,7 +1,7 @@
 import type { AfdianOrder } from './afdian'
 import type { Env } from './types'
 import { isProEligibleOrder } from './afdian'
-import { utcDayKey, utcHourKey } from './time-key'
+import { secondsUntilNextUtcHour, utcDayKey, utcHourKey } from './time-key'
 
 export type UserPlan = `free` | `pro`
 
@@ -71,9 +71,7 @@ export async function checkSyncRateLimit(
 
   const count = row?.count ?? 0
   if (count >= limit) {
-    const d = new Date()
-    const retryAfterSec = (60 - d.getUTCMinutes()) * 60 - d.getUTCSeconds()
-    return { allowed: false, limit, retryAfterSec: Math.max(1, retryAfterSec) }
+    return { allowed: false, limit, retryAfterSec: secondsUntilNextUtcHour() }
   }
 
   await db
