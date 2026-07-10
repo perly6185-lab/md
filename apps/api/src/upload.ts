@@ -21,6 +21,16 @@ import {
 } from './upload-rate'
 
 type UploadContext = Context<{ Bindings: Env }>
+type UploadErrorStatus = 400 | 404 | 429 | 502 | 503
+
+function uploadError(
+  c: UploadContext,
+  error: string,
+  status: UploadErrorStatus,
+  details: Record<string, unknown> = {},
+): Response {
+  return c.json({ error, ...details }, status)
+}
 
 function getClientIp(c: UploadContext): string {
   return c.req.header(`CF-Connecting-IP`)
@@ -60,12 +70,11 @@ async function checkUploadRateLimit(
   const limit = uploadRateLimitForPlan(plan)
   const count = await getUploadRateLimitCount(c.env.DB, scopeKey)
   if (count >= limit) {
-    return c.json({
-      error: `rate_limit_exceeded`,
+    return uploadError(c, `rate_limit_exceeded`, 429, {
       limit,
       retryAfterSec: uploadRateLimitRetryAfterSec(),
       upgradeRequired: plan === `free`,
-    }, 429)
+    })
   }
   return null
 }
@@ -76,28 +85,28 @@ function isImageFile(file: File): boolean {
 
 export async function uploadHandler(c: UploadContext) {
   if (!isUploadEnabled(c.env))
-    return c.json({ error: `upload_disabled` }, 404)
+    return uploadError(c, `upload_disabled`, 404)
 
   if (!isUploadBackendReady(c.env))
-    return c.json({ error: `upload_not_configured` }, 503)
+    return uploadError(c, `upload_not_configured`, 503)
 
   let body: Record<string, string | File>
   try {
     body = await c.req.parseBody()
   }
   catch {
-    return c.json({ error: `invalid_form_data` }, 400)
+    return uploadError(c, `invalid_form_data`, 400)
   }
 
   const file = body.file
   if (!(file instanceof File))
-    return c.json({ error: `file_required` }, 400)
+    return uploadError(c, `file_required`, 400)
 
   if (!isImageFile(file))
-    return c.json({ error: `invalid_file_type` }, 400)
+    return uploadError(c, `invalid_file_type`, 400)
 
   if (file.size <= 0 || file.size > UPLOAD_MAX_BYTES)
-    return c.json({ error: `file_too_large`, maxBytes: UPLOAD_MAX_BYTES }, 400)
+    return uploadError(c, `file_too_large`, 400, { maxBytes: UPLOAD_MAX_BYTES })
 
   const { scopeKey, plan } = await resolveUploadScope(c)
   const blocked = await checkUploadRateLimit(c, scopeKey, plan)
@@ -117,6 +126,6 @@ export async function uploadHandler(c: UploadContext) {
   }
   catch (err) {
     const message = err instanceof Error ? err.message : `upload_failed`
-    return c.json({ error: `upload_failed`, message }, 502)
+    return uploadError(c, `upload_failed`, 502, { message })
   }
 }
